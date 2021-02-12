@@ -1,38 +1,35 @@
 use reqwest::Client;
 use serde_json::json;
 
-const QUERY: &str = "
-query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
-  Page (page: $page, perPage: $perPage) {
-      pageInfo {
-          total
-          currentPage
-          lastPage
-          hasNextPage
-          perPage
-      }
-      media (id: $id, search: $search, season: $season, seasonYear: $seasonYear) {
-          id
-          season
-          seasonYear
-          title {
-              romaji
-          }
-      }
-  }
-}
-";
-
+mod queries;
+mod filters;
 
 pub async fn test() -> serde_json::Value {
  let client = Client::new();
 
+    /*
+    let data: filters::TestQuery = filters::TestQuery{
+        page: Some(1),
+        perPage: None,
+        season: Some("WINTER".to_owned()),
+        seasonYear: Some(2020)
+    };
+    */
+
+    /*
     let json = json!({"query": QUERY, "variables":{
       "page": 1,
-      "perPage": 3,
       "season": "WINTER",
       "seasonYear": 2020
     }});
+    */
+
+    let mut data = filters::Variables::new();
+    data.page_setup(1, 5);
+    data.season_setup("WINTER".to_owned(), 2021);
+    data.search_setup("redo".to_owned());
+
+    let json = json!({"query": queries::TEST_QUERY, "variables": serde_json::to_string(&data).unwrap()});
 
     let resp = client
         .post("https://graphql.anilist.co/")

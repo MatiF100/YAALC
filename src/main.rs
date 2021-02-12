@@ -1,9 +1,9 @@
 mod terminal;
-mod db;
+mod anilist;
 
 #[tokio::main]
 async fn main(){
-    println!("{:#?}", db::test().await);
+    println!("{:#?}", anilist::test().await);
 
     //terminal::create_terminal()?;
 
