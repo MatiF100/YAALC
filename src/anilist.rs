@@ -1,11 +1,11 @@
 use reqwest::Client;
 use serde_json::json;
 
-mod queries;
 mod filters;
+mod queries;
 
 pub async fn test() -> serde_json::Value {
- let client = Client::new();
+    let client = Client::new();
 
     /*
     let data: filters::TestQuery = filters::TestQuery{
@@ -27,9 +27,8 @@ pub async fn test() -> serde_json::Value {
     let mut data = filters::Variables::new();
     data.page_setup(1, 5);
     data.season_setup("WINTER".to_owned(), 2021);
-    data.search_setup("redo".to_owned());
 
-    let json = json!({"query": queries::TEST_QUERY, "variables": serde_json::to_string(&data).unwrap()});
+    let json = json!({"query": queries::TEST_QUERY, "variables": &data});
 
     let resp = client
         .post("https://graphql.anilist.co/")
@@ -46,5 +45,4 @@ pub async fn test() -> serde_json::Value {
     serde_json::from_str(&resp).unwrap()
 
     //let result: serde_json::Value = serde_json::from_str(&resp).unwrap();
-
 }
