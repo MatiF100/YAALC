@@ -14,11 +14,7 @@ use tui::widgets::{Block, Borders, List, ListItem, ListState, Widget};
 use tui::Frame;
 use tui::Terminal;
 
-const TASKS: [&str; 24] = [
-    "Item1", "Item2", "Item3", "Item4", "Item5", "Item6", "Item7", "Item8", "Item9", "Item10",
-    "Item11", "Item12", "Item13", "Item14", "Item15", "Item16", "Item17", "Item18", "Item19",
-    "Item20", "Item21", "Item22", "Item23", "Item24",
-];
+use crate::app::{App, StatefulList};
 
 
 
@@ -53,7 +49,7 @@ pub fn events_test(
     rx
 }
 
-pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>) {
+pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, app: &mut App) {
     match terminal.draw(|f| {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -68,27 +64,39 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>) {
             )
             .split(f.size());
         let block = Block::default().title("Block").borders(Borders::ALL);
-        f.render_widget(block, chunks[0]);
-        draw_list(f, chunks[1]);
+        f.render_widget(block.clone(), chunks[0]);
+        draw_list(f, chunks[1], app);
+        f.render_widget(block.clone(), chunks[2]);
     }) {
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
     };
 }
 
-fn draw_list(f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>, area: Rect) {
+fn draw_list(
+    f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>,
+    area: Rect,
+    app: &mut App,
+) {
     let chunks = Layout::default()
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .direction(Direction::Horizontal).split(area);
+        .direction(Direction::Horizontal)
+        .split(area);
 
-    let tasks: Vec<ListItem> = TASKS
+    
+
+    let tasks: Vec<ListItem> = app
+        .animes
+        .items
         .iter()
-        .map(|i| ListItem::new(vec![Spans::from(Span::raw(*i))]))
+        .map(|i| ListItem::new(vec![Spans::from(Span::raw(i))]))
         .collect();
     let tasks = List::new(tasks)
         .block(Block::default().borders(Borders::ALL).title("Anime"))
         .highlight_style(Style::default().add_modifier(Modifier::BOLD))
         .highlight_symbol(" >");
 
-        f.render_widget(tasks.clone(), chunks[0]);
+    //f.render_widget(tasks.clone(), chunks[0]);
+    f.render_stateful_widget(tasks, chunks[0], &mut app.animes.state);
+    //println!("{:?}", app.animes.state);
 }

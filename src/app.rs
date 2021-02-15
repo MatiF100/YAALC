@@ -1,17 +1,31 @@
-struct App{
+use tui::widgets::ListState;
+
+pub struct App {
     pub title: String,
-    pub animes: StatefulList<Anime>
-
-
+    //pub animes: StatefulList<Anime>,
+    pub animes: StatefulList<String>,
 }
 
-struct Anime{
+impl App {
+    pub fn new(title: String) -> App {
+        App {
+            title: title,
+            animes: StatefulList::new(),
+        }
+    }
+}
+
+pub struct Anime {
     pub id: i32,
     pub id_mal: i32,
     pub season: String,
     pub season_year: i32,
     pub episodes: i32,
-    pub genre: String
+    pub genre: String,
+}
+
+impl Anime {
+    pub fn from_json() {}
 }
 
 pub struct StatefulList<T> {
