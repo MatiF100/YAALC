@@ -1,6 +1,5 @@
 use crossterm::event::Event;
 
-
 mod anilist;
 mod app;
 mod terminal;
@@ -12,8 +11,18 @@ const TASKS: [&str; 24] = [
 
 #[tokio::main]
 async fn main() {
-    println!("{:#?}", anilist::test().await);
+    //println!("{:#?}", anilist::test().await.get("data").unwrap().get("Page").unwrap());
+    let test: app::RecievedData = serde_json::from_value(
+        anilist::test()
+            .await
+            .get("data")
+            .unwrap()
+            .clone(),
+    )
+    .unwrap();
+    println!("{:?}", test);
 
+    /*
     let mut app = app::App::new("Lista anime".to_owned());
     let dummy_list = app::StatefulList::with_items(
         TASKS
@@ -34,7 +43,10 @@ async fn main() {
                 crossterm::event::KeyEvent {
                     code: crossterm::event::KeyCode::Char('q'),
                     modifiers: _,
-                } => break,
+                } => {
+                    terminal::leave_terminal();
+                    break;
+                }
                 crossterm::event::KeyEvent {
                     code: crossterm::event::KeyCode::Up,
                     modifiers: _,
@@ -50,4 +62,5 @@ async fn main() {
         }
         terminal::draw_frame(&mut terminal, &mut app);
     }
+    */
 }

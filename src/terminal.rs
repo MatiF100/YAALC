@@ -16,8 +16,6 @@ use tui::Terminal;
 
 use crate::app::{App, StatefulList};
 
-
-
 pub fn create_terminal() -> Terminal<CrosstermBackend<std::io::Stdout>> {
     execute!(io::stdout(), EnterAlternateScreen);
 
@@ -82,8 +80,6 @@ fn draw_list(
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
         .direction(Direction::Horizontal)
         .split(area);
-
-    
 
     let tasks: Vec<ListItem> = app
         .animes

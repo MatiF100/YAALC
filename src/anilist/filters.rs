@@ -2,11 +2,21 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+
 pub struct Variables {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    id_mal: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     page: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     per_page: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     season: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     season_year: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     search: Option<String>,
 }
 
@@ -18,6 +28,7 @@ impl Variables {
     pub fn page_setup(&mut self, index: i32, length: i32) {
         self.page = Some(index);
         self.per_page = Some(length);
+        println!("{:?}", self.id);
     }
 
     pub fn season_setup(&mut self, season: String, year: i32) {

@@ -1,3 +1,4 @@
+use crate::app::Anime;
 use reqwest::Client;
 use serde_json::json;
 
@@ -29,6 +30,7 @@ pub async fn test() -> serde_json::Value {
     data.season_setup("WINTER".to_owned(), 2021);
 
     let json = json!({"query": queries::TEST_QUERY, "variables": &data});
+    println!("{:?}", json!(&data));
 
     let resp = client
         .post("https://graphql.anilist.co/")
@@ -45,4 +47,8 @@ pub async fn test() -> serde_json::Value {
     serde_json::from_str(&resp).unwrap()
 
     //let result: serde_json::Value = serde_json::from_str(&resp).unwrap();
+}
+
+pub async fn search_anime_by_name() -> Vec<Anime> {
+    Vec::new()
 }

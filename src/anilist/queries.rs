@@ -10,9 +10,13 @@ query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeaso
       }
       media (id: $id, search: $search, season: $season, seasonYear: $seasonYear) {
           id
+          idMal
           season
           seasonYear
+          episodes
+          genres
           title {
+              native
               romaji
               english
           }
