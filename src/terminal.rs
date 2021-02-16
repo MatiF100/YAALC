@@ -55,9 +55,9 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
             .margin(1)
             .constraints(
                 [
-                    Constraint::Percentage(10),
-                    Constraint::Percentage(80),
-                    Constraint::Percentage(10),
+                    Constraint::Percentage(8),
+                    Constraint::Percentage(85),
+                    Constraint::Percentage(5),
                 ]
                 .as_ref(),
             )
@@ -69,7 +69,7 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
         };
         let paragraph = Paragraph::new(text)
             .block(block.clone())
-            .wrap(Wrap { trim: true });
+            .wrap(Wrap { trim: false });
         f.render_widget(paragraph, chunks[0]);
         draw_list(f, chunks[1], app);
         f.render_widget(block.clone(), chunks[2]);

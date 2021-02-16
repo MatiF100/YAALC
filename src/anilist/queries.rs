@@ -1,5 +1,5 @@
 pub const TEST_QUERY: &str = "
-query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeason, $seasonYear: Int) {
+query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeason, $seasonYear: Int, $type: MediaType) {
   Page (page: $page, perPage: $perPage) {
       pageInfo {
           total
@@ -8,7 +8,7 @@ query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeaso
           hasNextPage
           perPage
       }
-      media (id: $id, search: $search, season: $season, seasonYear: $seasonYear) {
+      media (id: $id, search: $search, season: $season, seasonYear: $seasonYear, type: $type) {
           id
           idMal
           season

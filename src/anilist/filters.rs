@@ -20,7 +20,7 @@ pub struct Variables {
     search: Option<String>,
     #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    media_type: Option<String>,
+    media_type: Option<MediaType>,
 }
 
 impl Variables {
@@ -39,10 +39,21 @@ impl Variables {
     }
 
     pub fn search_setup(&mut self, search: String) {
-        self.search = Some(search);
+        if search.is_empty() {
+            self.search = None;
+            self.season_year = Some(2021);
+        } else {
+            self.search = Some(search);
+        }
     }
 
     pub fn set_anime_type(&mut self) {
-        self.media_type = Some("ANIME".to_owned());
+        self.media_type = Some(MediaType::ANIME);
     }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub enum MediaType {
+    ANIME,
+    MANGA,
 }

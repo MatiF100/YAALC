@@ -1,5 +1,5 @@
 use crate::anilist;
-use crossterm::event::{Event, KeyCode, KeyEvent};
+use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use serde::{Deserialize, Serialize};
 use tui::widgets::ListState;
 
@@ -63,8 +63,15 @@ impl App {
                 Event::Key(key) => match key {
                     KeyEvent {
                         code: KeyCode::Esc,
+                        modifiers: KeyModifiers::SHIFT,
+                    } => self.search_bar = "".to_owned(),
+                    KeyEvent {
+                        code: KeyCode::Esc,
                         modifiers: _,
-                    } => self.mode = AppMode::NORMAL,
+                    } => {
+                        self.mode = AppMode::NORMAL;
+                        self.search_bar = "".to_owned()
+                    }
                     KeyEvent {
                         code: KeyCode::Char(c),
                         modifiers: _,
@@ -80,6 +87,7 @@ impl App {
                         modifiers: _,
                     } => {
                         self.search_animes(self.search_bar.clone()).await;
+                        self.mode = AppMode::NORMAL;
                     }
                     _ => (),
                 },
@@ -115,8 +123,8 @@ pub struct RecievedPage {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PagedAnime {
-    pub page_info: Option<PageDetails>,
-    pub media: Option<Vec<Anime>>,
+    pub page_info: PageDetails,
+    pub media: Vec<Anime>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

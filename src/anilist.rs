@@ -1,4 +1,7 @@
-use crate::app::{Anime, RecievedData, StatefulList};
+use crate::{
+    app::{Anime, PagedAnime, RecievedData, RecievedPage, StatefulList},
+    terminal,
+};
 use reqwest::Client;
 use serde_json::json;
 
@@ -28,6 +31,7 @@ pub async fn test() -> serde_json::Value {
     let mut data = filters::Variables::new();
     data.page_setup(1, 50);
     data.season_setup("WINTER".to_owned(), 2021);
+    data.set_anime_type();
 
     let json = json!({"query": queries::TEST_QUERY, "variables": &data});
     println!("{:?}", json!(&data));
@@ -52,27 +56,63 @@ pub async fn test() -> serde_json::Value {
 pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
     let client = Client::new();
     let mut query_args = filters::Variables::new();
-    query_args.page_setup(1, 50);
+    let mut page_index = 1;
     query_args.set_anime_type();
     query_args.search_setup(search);
-    let query = json!({"query": queries::TEST_QUERY, "variables": &query_args});
+    let mut output: Vec<Anime> = Vec::new();
 
-    let response = client
-        .post("https://graphql.anilist.co/")
-        .header("Content-Type", "application/json")
-        .header("Accept", "application/json")
-        .body(query.to_string())
-        .send()
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
+    loop {
+        query_args.page_setup(page_index, 50);
+        let query = json!({"query": queries::TEST_QUERY, "variables": &query_args});
+        let response = client
+            .post("https://graphql.anilist.co/")
+            .header("Content-Type", "application/json")
+            .header("Accept", "application/json")
+            .body(query.to_string())
+            .send()
+            .await
+            .unwrap()
+            .text()
+            .await
+            .unwrap();
 
-    let animes: RecievedData = serde_json::from_str(&response).unwrap();
+        let animes: RecievedData = serde_json::from_str(&response).unwrap();
 
-    let tmp = animes.data.unwrap().page.unwrap().media.unwrap();
+        //let tmp = animes.data.unwrap().page.unwrap().media.unwrap();
 
-    //Vec::new()
-    tmp
+        let mut page_response = get_page_from_recieved_data(animes);
+        output.append(&mut page_response.media);
+
+        if page_response.page_info.has_next_page.unwrap() {
+            page_index += 1;
+        } else {
+            break;
+        }
+        //println!("Dupa: {}, {}, {}",page_index,page_response.page_info.current_page.unwrap(), page_response.page_info.last_page.unwrap());
+    }
+    output
+    //tmp
+}
+
+fn get_page_from_recieved_data(data: RecievedData) -> PagedAnime {
+    match data {
+        RecievedData {
+            data: Some(data),
+            errors: None,
+        } => match data {
+            RecievedPage { page: Some(page) } => page,
+            RecievedPage { page: None } => {
+                panic!("Recieved data does not contain Page field! Aborting!")
+            }
+        },
+        RecievedData {
+            data: Some(_),
+            errors: Some(err),
+        } => panic!("Recieved data, but unexpected error occured: {:?}", err),
+        RecievedData {
+            data: None,
+            errors: Some(err),
+        } => panic!("No data recieved! Unexpected error occured: {:?}", err),
+        _ => panic!("No data, nor errors recieved!"),
+    }
 }

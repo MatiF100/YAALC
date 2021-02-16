@@ -16,7 +16,7 @@ async fn main() {
     //dbg!(&test);
 
     let mut app = app::App::new("Lista anime".to_owned());
-    let dummy_list = app::StatefulList::with_items(test.data.unwrap().page.unwrap().media.unwrap());
+    let dummy_list = app::StatefulList::with_items(test.data.unwrap().page.unwrap().media);
     app.animes = dummy_list;
 
     let mut terminal = terminal::create_terminal();
