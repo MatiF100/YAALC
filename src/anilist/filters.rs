@@ -18,7 +18,7 @@ pub struct Variables {
     season_year: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     search: Option<String>,
-    #[serde(rename = "media")]
+    #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
     media_type: Option<String>,
 }
@@ -41,8 +41,8 @@ impl Variables {
     pub fn search_setup(&mut self, search: String) {
         self.search = Some(search);
     }
-    
-    pub fn set_anime_type(&mut self){
+
+    pub fn set_anime_type(&mut self) {
         self.media_type = Some("ANIME".to_owned());
     }
 }

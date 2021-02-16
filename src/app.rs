@@ -1,3 +1,5 @@
+use crate::anilist;
+use crossterm::event::{Event, KeyCode, KeyEvent};
 use serde::{Deserialize, Serialize};
 use tui::widgets::ListState;
 
@@ -7,6 +9,8 @@ pub struct App {
     pub animes: StatefulList<Anime>,
     pub should_exit: bool,
     pub legend: Vec<(String, String)>,
+    pub mode: AppMode,
+    pub search_bar: String,
 }
 
 impl App {
@@ -14,8 +18,85 @@ impl App {
         App {
             title: title,
             animes: StatefulList::new(),
+            should_exit: false,
             ..Default::default()
         }
+    }
+
+    async fn search_animes(&mut self, search: String) {
+        self.animes = StatefulList::with_items(anilist::search_anime_by_name(search).await);
+    }
+
+    pub async fn handle_input(&mut self, input: Event) {
+        match self.mode {
+            AppMode::NORMAL => {
+                match input {
+                    Event::Key(key) => match key {
+                        KeyEvent {
+                            code: KeyCode::Char('q'),
+                            modifiers: _,
+                        } => {
+                            //terminal::leave_terminal();
+                            self.should_exit = true;
+                        }
+                        KeyEvent {
+                            code: KeyCode::Char('i'),
+                            modifiers: _,
+                        } => {
+                            self.mode = AppMode::INPUT;
+                        }
+                        KeyEvent {
+                            code: KeyCode::Up,
+                            modifiers: _,
+                        } => self.animes.previous(),
+                        KeyEvent {
+                            code: KeyCode::Down,
+                            modifiers: _,
+                        } => self.animes.next(),
+                        _ => (),
+                    },
+                    //Event::Resize(_, _) => terminal::draw_frame(&mut terminal, &mut app),
+                    _ => (),
+                }
+            }
+            AppMode::INPUT => match input {
+                Event::Key(key) => match key {
+                    KeyEvent {
+                        code: KeyCode::Esc,
+                        modifiers: _,
+                    } => self.mode = AppMode::NORMAL,
+                    KeyEvent {
+                        code: KeyCode::Char(c),
+                        modifiers: _,
+                    } => self.search_bar.push_str(String::from(c).as_ref()),
+                    KeyEvent {
+                        code: KeyCode::Backspace,
+                        modifiers: _,
+                    } => {
+                        self.search_bar.pop();
+                    }
+                    KeyEvent {
+                        code: KeyCode::Enter,
+                        modifiers: _,
+                    } => {
+                        self.search_animes(self.search_bar.clone()).await;
+                    }
+                    _ => (),
+                },
+                _ => (),
+            },
+        }
+    }
+}
+
+pub enum AppMode {
+    NORMAL,
+    INPUT,
+}
+
+impl Default for AppMode {
+    fn default() -> AppMode {
+        AppMode::NORMAL
     }
 }
 
@@ -69,17 +150,17 @@ pub struct Title {
     pub english: Option<String>,
 }
 
-impl Title{
-    pub fn get_title(&self) -> String{
-        match &self.english{
+impl Title {
+    pub fn get_title(&self) -> String {
+        match &self.english {
             Some(title) => title.to_string(),
-            None => match &self.romaji{
+            None => match &self.romaji {
                 Some(title) => title.to_string(),
-                None => match &self.native{
+                None => match &self.native {
                     Some(title) => title.to_string(),
-                    None => "Missing Title".to_owned()
-                }
-            }
+                    None => "Missing Title".to_owned(),
+                },
+            },
         }
     }
 }

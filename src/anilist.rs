@@ -1,4 +1,4 @@
-use crate::app::Anime;
+use crate::app::{Anime, RecievedData, StatefulList};
 use reqwest::Client;
 use serde_json::json;
 
@@ -26,7 +26,7 @@ pub async fn test() -> serde_json::Value {
     */
 
     let mut data = filters::Variables::new();
-    data.page_setup(1, 5);
+    data.page_setup(1, 50);
     data.season_setup("WINTER".to_owned(), 2021);
 
     let json = json!({"query": queries::TEST_QUERY, "variables": &data});
@@ -49,6 +49,30 @@ pub async fn test() -> serde_json::Value {
     //let result: serde_json::Value = serde_json::from_str(&resp).unwrap();
 }
 
-pub async fn search_anime_by_name() -> Vec<Anime> {
-    Vec::new()
+pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
+    let client = Client::new();
+    let mut query_args = filters::Variables::new();
+    query_args.page_setup(1, 50);
+    query_args.set_anime_type();
+    query_args.search_setup(search);
+    let query = json!({"query": queries::TEST_QUERY, "variables": &query_args});
+
+    let response = client
+        .post("https://graphql.anilist.co/")
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json")
+        .body(query.to_string())
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+
+    let animes: RecievedData = serde_json::from_str(&response).unwrap();
+
+    let tmp = animes.data.unwrap().page.unwrap().media.unwrap();
+
+    //Vec::new()
+    tmp
 }

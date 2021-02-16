@@ -10,11 +10,11 @@ use tui::backend::CrosstermBackend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
 use tui::text::{Span, Spans};
-use tui::widgets::{Block, Borders, List, ListItem, ListState, Widget};
+use tui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Widget, Wrap};
 use tui::Frame;
 use tui::Terminal;
 
-use crate::app::{App, StatefulList};
+use crate::app::{App, AppMode, StatefulList};
 
 pub fn create_terminal() -> Terminal<CrosstermBackend<std::io::Stdout>> {
     execute!(io::stdout(), EnterAlternateScreen);
@@ -28,6 +28,8 @@ pub fn create_terminal() -> Terminal<CrosstermBackend<std::io::Stdout>> {
     }
 }
 
+pub fn process_event(event: Event) {}
+
 pub fn leave_terminal() {
     execute!(io::stdout(), LeaveAlternateScreen);
 }
@@ -37,10 +39,9 @@ pub fn reenter_terminal() {
     execute!(io::stdout(), EnterAlternateScreen);
 }
 
-pub fn events_test(
-    terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-) -> std::sync::mpsc::Receiver<Event> {
+pub fn events_test() -> std::sync::mpsc::Receiver<Event> {
     let (tx, rx) = channel();
+
     thread::spawn(move || loop {
         tx.send(read().unwrap()).unwrap();
     });
@@ -61,8 +62,15 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
                 .as_ref(),
             )
             .split(f.size());
-        let block = Block::default().title("Block").borders(Borders::ALL);
-        f.render_widget(block.clone(), chunks[0]);
+        let block = Block::default().title("Search").borders(Borders::ALL);
+        let text = match app.mode {
+            AppMode::INPUT => format!("{}_", app.search_bar),
+            AppMode::NORMAL => app.search_bar.clone(),
+        };
+        let paragraph = Paragraph::new(text)
+            .block(block.clone())
+            .wrap(Wrap { trim: true });
+        f.render_widget(paragraph, chunks[0]);
         draw_list(f, chunks[1], app);
         f.render_widget(block.clone(), chunks[2]);
     }) {

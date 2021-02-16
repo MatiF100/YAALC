@@ -15,42 +15,18 @@ async fn main() {
     let test: app::RecievedData = serde_json::from_value(anilist::test().await).unwrap();
     //dbg!(&test);
 
-    
     let mut app = app::App::new("Lista anime".to_owned());
-    let dummy_list = app::StatefulList::with_items(
-        test.data.unwrap().page.unwrap().media.unwrap()
-    );
+    let dummy_list = app::StatefulList::with_items(test.data.unwrap().page.unwrap().media.unwrap());
     app.animes = dummy_list;
 
     let mut terminal = terminal::create_terminal();
     terminal::draw_frame(&mut terminal, &mut app);
-    let event = terminal::events_test(&mut terminal);
+    let event = terminal::events_test();
 
-    loop {
+    while !app.should_exit {
         let ev = event.recv().unwrap();
-        match ev {
-            Event::Key(key) => match key {
-                crossterm::event::KeyEvent {
-                    code: crossterm::event::KeyCode::Char('q'),
-                    modifiers: _,
-                } => {
-                    terminal::leave_terminal();
-                    break;
-                }
-                crossterm::event::KeyEvent {
-                    code: crossterm::event::KeyCode::Up,
-                    modifiers: _,
-                } => app.animes.previous(),
-                crossterm::event::KeyEvent {
-                    code: crossterm::event::KeyCode::Down,
-                    modifiers: _,
-                } => app.animes.next(),
-                _ => println!("Pressed: {:?}", key),
-            },
-            //Event::Resize(_, _) => terminal::draw_frame(&mut terminal, &mut app),
-            _ => (),
-        }
+        app.handle_input(ev).await;
         terminal::draw_frame(&mut terminal, &mut app);
     }
-    
+    terminal::leave_terminal();
 }
