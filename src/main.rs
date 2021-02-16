@@ -12,23 +12,13 @@ const TASKS: [&str; 24] = [
 #[tokio::main]
 async fn main() {
     //println!("{:#?}", anilist::test().await.get("data").unwrap().get("Page").unwrap());
-    let test: app::RecievedData = serde_json::from_value(
-        anilist::test()
-            .await
-            .get("data")
-            .unwrap()
-            .clone(),
-    )
-    .unwrap();
-    println!("{:?}", test);
+    let test: app::RecievedData = serde_json::from_value(anilist::test().await).unwrap();
+    //dbg!(&test);
 
-    /*
+    
     let mut app = app::App::new("Lista anime".to_owned());
     let dummy_list = app::StatefulList::with_items(
-        TASKS
-            .iter()
-            .map(|s| String::from(*s))
-            .collect::<Vec<String>>(),
+        test.data.unwrap().page.unwrap().media.unwrap()
     );
     app.animes = dummy_list;
 
@@ -62,5 +52,5 @@ async fn main() {
         }
         terminal::draw_frame(&mut terminal, &mut app);
     }
-    */
+    
 }

@@ -85,7 +85,7 @@ fn draw_list(
         .animes
         .items
         .iter()
-        .map(|i| ListItem::new(vec![Spans::from(Span::raw(i))]))
+        .map(|i| ListItem::new(vec![Spans::from(Span::raw(i.title.get_title()))]))
         .collect();
     let tasks = List::new(tasks)
         .block(Block::default().borders(Borders::ALL).title("Anime"))

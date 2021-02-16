@@ -15,6 +15,9 @@ query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeaso
           seasonYear
           episodes
           genres
+          status
+          duration
+          type
           title {
               native
               romaji

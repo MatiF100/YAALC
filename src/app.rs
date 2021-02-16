@@ -4,8 +4,7 @@ use tui::widgets::ListState;
 #[derive(Default)]
 pub struct App {
     pub title: String,
-    //pub animes: StatefulList<Anime>,
-    pub animes: StatefulList<String>,
+    pub animes: StatefulList<Anime>,
     pub should_exit: bool,
     pub legend: Vec<(String, String)>,
 }
@@ -19,28 +18,34 @@ impl App {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct RecievedData {
+    pub data: Option<RecievedPage>,
+    pub errors: Option<serde_json::Value>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
-pub struct RecievedData{
-    page: Option<PagedAnime>
+pub struct RecievedPage {
+    pub page: Option<PagedAnime>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct PagedAnime{
-    page_info: Option<PageDetails>,
-    media: Option<Vec<Anime>>
-
+pub struct PagedAnime {
+    pub page_info: Option<PageDetails>,
+    pub media: Option<Vec<Anime>>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct PageDetails{
-    total: Option<i32>,
-    per_page: Option<i32>,
-    current_page: Option<i32>,
-    last_page: Option<i32>,
-    has_next_page: Option<bool>
+pub struct PageDetails {
+    pub total: Option<i32>,
+    pub per_page: Option<i32>,
+    pub current_page: Option<i32>,
+    pub last_page: Option<i32>,
+    pub has_next_page: Option<bool>,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -53,14 +58,30 @@ pub struct Anime {
     pub season_year: Option<i32>,
     pub episodes: Option<i32>,
     pub genres: Option<Vec<String>>,
+    pub status: Option<String>,
+    pub duration: Option<i32>,
 }
 
-
 #[derive(Default, Debug, Serialize, Deserialize)]
-pub struct Title{
-    native: Option<String>,
-    romaji: Option<String>,
-    english: Option<String>
+pub struct Title {
+    pub native: Option<String>,
+    pub romaji: Option<String>,
+    pub english: Option<String>,
+}
+
+impl Title{
+    pub fn get_title(&self) -> String{
+        match &self.english{
+            Some(title) => title.to_string(),
+            None => match &self.romaji{
+                Some(title) => title.to_string(),
+                None => match &self.native{
+                    Some(title) => title.to_string(),
+                    None => "Missing Title".to_owned()
+                }
+            }
+        }
+    }
 }
 
 pub struct StatefulList<T> {
