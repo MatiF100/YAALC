@@ -1,15 +1,17 @@
 use crate::{
-    app::{Anime, PagedAnime, RecievedData, RecievedPage, StatefulList},
+    app::{Anime, App, PagedAnime, RecievedData, RecievedPage, StatefulList},
     terminal,
 };
 use reqwest::Client;
 use serde_json::json;
 
+pub mod auth;
 mod filters;
 mod queries;
 
-pub async fn test() -> serde_json::Value {
+pub async fn test(app: &App) -> serde_json::Value {
     let client = Client::new();
+    //auth::auth();
 
     /*
     let data: filters::TestQuery = filters::TestQuery{
@@ -40,6 +42,7 @@ pub async fn test() -> serde_json::Value {
         .post("https://graphql.anilist.co/")
         .header("Content-Type", "application/json")
         .header("Accept", "application/json")
+        .header("Authorization", app.get_token().unwrap())
         .body(json.to_string())
         .send()
         .await

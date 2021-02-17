@@ -1,12 +1,15 @@
 use crate::anilist;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
+use oauth2::AccessToken;
 use serde::{Deserialize, Serialize};
+use std::time::SystemTime;
 use tui::widgets::ListState;
 
 #[derive(Default)]
 pub struct App {
     pub title: String,
     pub animes: StatefulList<Anime>,
+    pub token: Option<AuthToken>,
     pub should_exit: bool,
     pub legend: Vec<(String, String)>,
     pub mode: AppMode,
@@ -20,6 +23,16 @@ impl App {
             animes: StatefulList::new(),
             should_exit: false,
             ..Default::default()
+        }
+    }
+
+    pub fn authorize(&mut self) {
+        self.token = anilist::auth::auth();
+    }
+    pub fn get_token(&self) -> Option<String> {
+        match &self.token {
+            Some(token) => Some(token.get_token()),
+            None => None,
         }
     }
 
@@ -94,6 +107,29 @@ impl App {
                 _ => (),
             },
         }
+    }
+}
+
+pub struct AuthToken {
+    access_token: AccessToken,
+    expires_at: u64,
+}
+impl AuthToken {
+    pub fn from_args(token: AccessToken, expires: u64) -> AuthToken {
+        AuthToken {
+            access_token: token,
+            expires_at: expires
+                + SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+        }
+    }
+
+    pub fn get_token(&self) -> String {
+        let mut token = String::from("Bearer ");
+        token.push_str(self.access_token.secret());
+        token
     }
 }
 

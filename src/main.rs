@@ -1,4 +1,5 @@
 use crossterm::event::Event;
+use std::time::{Duration, SystemTime};
 
 mod anilist;
 mod app;
@@ -12,10 +13,20 @@ const TASKS: [&str; 24] = [
 #[tokio::main]
 async fn main() {
     //println!("{:#?}", anilist::test().await.get("data").unwrap().get("Page").unwrap());
-    let test: app::RecievedData = serde_json::from_value(anilist::test().await).unwrap();
+    println!(
+        "{:?}",
+        SystemTime::now()
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .unwrap()
+            .as_secs()
+    );
     //dbg!(&test);
 
     let mut app = app::App::new("Lista anime".to_owned());
+    app.authorize();
+
+    let test: app::RecievedData = serde_json::from_value(anilist::test(&app).await).unwrap();
+
     let dummy_list = app::StatefulList::with_items(test.data.unwrap().page.unwrap().media);
     app.animes = dummy_list;
 
