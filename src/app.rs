@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 use tui::widgets::ListState;
 
+//Struct holding information about current app state, including current mode and data to be shown
 #[derive(Default)]
 pub struct App {
     pub title: String,
@@ -17,6 +18,7 @@ pub struct App {
 }
 
 impl App {
+    //Creating new app backend instance
     pub fn new(title: String) -> App {
         App {
             title: title,
@@ -26,9 +28,12 @@ impl App {
         }
     }
 
+    //Getting authorization token from the anilist.co
     pub fn authorize(&mut self) {
         self.token = anilist::auth::auth();
     }
+
+    //Retrieving the auth token for use in code
     pub fn get_token(&self) -> Option<String> {
         match &self.token {
             Some(token) => Some(token.get_token()),
@@ -36,10 +41,13 @@ impl App {
         }
     }
 
+    //Loading into app animes that meet name criteria
     async fn search_animes(&mut self, search: String) {
         self.animes = StatefulList::with_items(anilist::search_anime_by_name(search).await);
     }
 
+
+    //Listener for keyboard input handling. Actions are dependant on AppMode
     pub async fn handle_input(&mut self, input: Event) {
         match self.mode {
             AppMode::NORMAL => {
@@ -110,11 +118,13 @@ impl App {
     }
 }
 
+//Struct holding information about authorization token
 pub struct AuthToken {
     access_token: AccessToken,
     expires_at: u64,
 }
 impl AuthToken {
+    //Saving the token and its expiration time as unix timestamp
     pub fn from_args(token: AccessToken, expires: u64) -> AuthToken {
         AuthToken {
             access_token: token,
@@ -126,6 +136,7 @@ impl AuthToken {
         }
     }
 
+    //Retrieving saved token
     pub fn get_token(&self) -> String {
         let mut token = String::from("Bearer ");
         token.push_str(self.access_token.secret());
@@ -133,29 +144,36 @@ impl AuthToken {
     }
 }
 
+
+//Enum containing possible application states.
 pub enum AppMode {
     NORMAL,
     INPUT,
 }
 
 impl Default for AppMode {
+    //By default app starts in NORMAL mode
     fn default() -> AppMode {
         AppMode::NORMAL
     }
 }
 
+//Struct holding data and/or errors recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RecievedData {
     pub data: Option<RecievedPage>,
     pub errors: Option<serde_json::Value>,
 }
 
+
+//Struct holding Page field contained in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct RecievedPage {
     pub page: Option<PagedAnime>,
 }
 
+//Struct holding contents of Page field in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PagedAnime {
@@ -163,6 +181,7 @@ pub struct PagedAnime {
     pub media: Vec<Anime>,
 }
 
+//Struct holding details of page recieved from anilist.co, such as it's index, total number of pages and more. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PageDetails {
@@ -173,6 +192,7 @@ pub struct PageDetails {
     pub has_next_page: Option<bool>,
 }
 
+//Struct holding data about anime recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Anime {
@@ -187,6 +207,7 @@ pub struct Anime {
     pub duration: Option<i32>,
 }
 
+//Struct holding information about the anime's title
 #[derive(Default, Debug, Serialize, Deserialize)]
 pub struct Title {
     pub native: Option<String>,
@@ -195,6 +216,7 @@ pub struct Title {
 }
 
 impl Title {
+    //Retrieving the most convenient title to display in order: English>Romaji>Native
     pub fn get_title(&self) -> String {
         match &self.english {
             Some(title) => title.to_string(),
@@ -209,6 +231,7 @@ impl Title {
     }
 }
 
+//Struct holding some data as vector, as well as information about currently selected element
 pub struct StatefulList<T> {
     pub state: ListState,
     pub items: Vec<T>,
