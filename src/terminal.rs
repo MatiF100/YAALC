@@ -85,7 +85,6 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
     };
-
 }
 
 //Function used to draw list of animes contained in App struct

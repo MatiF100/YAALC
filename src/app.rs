@@ -1,8 +1,9 @@
 use crate::anilist;
-use std::fs::File;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use oauth2::AccessToken;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+use std::fs::File;
 use std::time::SystemTime;
 use tui::widgets::ListState;
 
@@ -31,8 +32,22 @@ impl App {
 
     //Getting authorization token from the anilist.co
     pub fn authorize(&mut self) {
-        
-        self.token = anilist::auth::auth();
+        match std::fs::read_to_string("token.json") {
+            Ok(token) => {
+                let token: AuthToken = serde_json::from_str(&token).unwrap();
+                self.token = Some(token);
+            }
+            Err(e) => match e.kind() {
+                std::io::ErrorKind::NotFound => {
+                    let token = anilist::auth::auth();
+                    serde_json::to_writer_pretty(&File::create("token.json").unwrap(), &token);
+                }
+                _ => println!(
+                    "Failed to read authentication token! App will run in search_only mode"
+                ),
+            },
+        }
+        //self.token = anilist::auth::auth();
     }
 
     //Retrieving the auth token for use in code
@@ -120,6 +135,7 @@ impl App {
 }
 
 //Struct holding information about authorization token
+#[derive(Serialize, Deserialize)]
 pub struct AuthToken {
     access_token: AccessToken,
     expires_at: u64,
