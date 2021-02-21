@@ -9,6 +9,8 @@ pub mod auth;
 mod filters;
 mod queries;
 
+//Test function that sends first request
+//Used mainly for testing purposes
 pub async fn test(app: &App) -> serde_json::Value {
     let client = Client::new();
     //auth::auth();
@@ -56,6 +58,7 @@ pub async fn test(app: &App) -> serde_json::Value {
     //let result: serde_json::Value = serde_json::from_str(&resp).unwrap();
 }
 
+//Function sending request for animes filtered only by name
 pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
     let client = Client::new();
     let mut query_args = filters::Variables::new();
@@ -97,6 +100,7 @@ pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
     //tmp
 }
 
+//Function unpacking data recieved from API endpoint, and checking for errors
 fn get_page_from_recieved_data(data: RecievedData) -> PagedAnime {
     match data {
         RecievedData {

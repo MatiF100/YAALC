@@ -16,6 +16,8 @@ use tui::Terminal;
 
 use crate::app::{App, AppMode, StatefulList};
 
+//Entering alternate screen, and creating new terminal instance
+//Returning handle to this terminal
 pub fn create_terminal() -> Terminal<CrosstermBackend<std::io::Stdout>> {
     execute!(io::stdout(), EnterAlternateScreen);
 
@@ -30,15 +32,19 @@ pub fn create_terminal() -> Terminal<CrosstermBackend<std::io::Stdout>> {
 
 pub fn process_event(event: Event) {}
 
+//Leaving the alternate screen
 pub fn leave_terminal() {
     execute!(io::stdout(), LeaveAlternateScreen);
 }
 
+//Entering the alternate screen
 #[allow(dead_code)]
 pub fn reenter_terminal() {
     execute!(io::stdout(), EnterAlternateScreen);
 }
 
+//Creating thread litening for user input events
+//Returns  mpsc::Reciever, that recieves queued inputs
 pub fn events_test() -> std::sync::mpsc::Receiver<Event> {
     let (tx, rx) = channel();
 
@@ -48,6 +54,8 @@ pub fn events_test() -> std::sync::mpsc::Receiver<Event> {
     rx
 }
 
+//Drawing basic terminal layout
+//Recieves mutable reference to terminal handle, and mutable reference to struct holding informatio about current app state
 pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, app: &mut App) {
     match terminal.draw(|f| {
         let chunks = Layout::default()
@@ -77,8 +85,10 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
     };
+
 }
 
+//Function used to draw list of animes contained in App struct
 fn draw_list(
     f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>,
     area: Rect,

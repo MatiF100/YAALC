@@ -1,4 +1,5 @@
 use crate::anilist;
+use std::fs::File;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use oauth2::AccessToken;
 use serde::{Deserialize, Serialize};
@@ -30,6 +31,7 @@ impl App {
 
     //Getting authorization token from the anilist.co
     pub fn authorize(&mut self) {
+        
         self.token = anilist::auth::auth();
     }
 
@@ -45,7 +47,6 @@ impl App {
     async fn search_animes(&mut self, search: String) {
         self.animes = StatefulList::with_items(anilist::search_anime_by_name(search).await);
     }
-
 
     //Listener for keyboard input handling. Actions are dependant on AppMode
     pub async fn handle_input(&mut self, input: Event) {
@@ -144,7 +145,6 @@ impl AuthToken {
     }
 }
 
-
 //Enum containing possible application states.
 pub enum AppMode {
     NORMAL,
@@ -164,7 +164,6 @@ pub struct RecievedData {
     pub data: Option<RecievedPage>,
     pub errors: Option<serde_json::Value>,
 }
-
 
 //Struct holding Page field contained in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
