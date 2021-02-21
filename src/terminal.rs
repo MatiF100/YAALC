@@ -14,6 +14,8 @@ use tui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Widget,
 use tui::Frame;
 use tui::Terminal;
 
+use serde_json::json;
+
 use crate::app::{App, AppMode, StatefulList};
 
 //Entering alternate screen, and creating new terminal instance
@@ -71,27 +73,146 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
             )
             .split(f.size());
         let main_areas = Layout::default()
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .direction(Direction::Horizontal)
-        .split(chunks[1]);
-
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+            .direction(Direction::Horizontal)
+            .split(chunks[1]);
 
         let search_block = Block::default().title("Search").borders(Borders::ALL);
         let legend_block = Block::default().title("Keybindings").borders(Borders::NONE);
-        let text = match app.mode {
+        let search_text = match app.mode {
             AppMode::INPUT => format!("{}_", app.search_bar),
             AppMode::NORMAL => app.search_bar.clone(),
         };
-        let paragraph = Paragraph::new(text)
+        let anime_list = Paragraph::new(search_text)
             .block(search_block)
             .wrap(Wrap { trim: false });
-        f.render_widget(paragraph, chunks[0]);
+        f.render_widget(anime_list, chunks[0]);
         draw_list(f, main_areas[0], app);
+        draw_details(f, main_areas[1], app);
         f.render_widget(legend_block, chunks[2]);
     }) {
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
     };
+}
+
+fn draw_details(
+    f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>,
+    area: Rect,
+    app: &mut App,
+) {
+    let selected_anime = app.animes.state.selected();
+
+    match selected_anime {
+        Some(index) => {
+            let selected_anime = match app.animes.items.get(index) {
+                Some(anime) => anime,
+                None => {
+                    let info = Paragraph::new("Unexpected error happened! Please contact app creator, together with error information: Error while indexing into anime list")
+                    .block(Block::default().title("Details").borders(Borders::ALL))
+                    .wrap(Wrap{trim: true});
+                    f.render_widget(info, area);
+                    return;
+                }
+            };
+
+            let formatted_details = vec![
+                Spans::from(Span::styled(
+                    "TITLE",
+                    Style::default().add_modifier(Modifier::UNDERLINED),
+                )),
+                Spans::from(vec![
+                    Span::from("Native: "),
+                    Span::from(unpack_detail(selected_anime.title.native.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::from("Romaji: "),
+                    Span::from(unpack_detail(selected_anime.title.romaji.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::from("English: "),
+                    Span::from(unpack_detail(selected_anime.title.english.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Airing season",
+                        Style::default().add_modifier(Modifier::UNDERLINED),
+                    ),
+                    Span::from(": "),
+                    Span::from(unpack_detail(selected_anime.season.as_ref())),
+                    Span::from(" "),
+                    Span::from(unpack_detail(selected_anime.season_year.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Total episodes",
+                        Style::default().add_modifier(Modifier::UNDERLINED),
+                    ),
+                    Span::from(": "),
+                    Span::from(unpack_detail(selected_anime.episodes.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Airing status",
+                        Style::default().add_modifier(Modifier::UNDERLINED),
+                    ),
+                    Span::from(": "),
+                    Span::from(unpack_detail(selected_anime.status.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Episode duration (minutes)",
+                        Style::default().add_modifier(Modifier::UNDERLINED),
+                    ),
+                    Span::from(": "),
+                    Span::from(unpack_detail(selected_anime.duration.as_ref())),
+                ]),
+                Spans::from(vec![
+                    Span::styled(
+                        "Genres",
+                        Style::default().add_modifier(Modifier::UNDERLINED),
+                    ),
+                    Span::from(": "),
+                    Span::from(unpack_vector(selected_anime.genres.as_ref())),
+                ]),
+            ];
+            let info = Paragraph::new(formatted_details)
+                .block(Block::default().title("Details").borders(Borders::ALL))
+                .wrap(Wrap { trim: true });
+            f.render_widget(info, area)
+        }
+        None => {
+            let info = Paragraph::new(
+                "Please select an anime from the list, or search for something more interesting",
+            )
+            .block(Block::default().title("Details").borders(Borders::ALL))
+            .wrap(Wrap { trim: true });
+            f.render_widget(info, area);
+        }
+    }
+}
+
+fn unpack_detail<T: std::fmt::Display>(detail: Option<T>) -> String {
+    match detail {
+        Some(data) => data.to_string(),
+        None => String::from("Unknown"),
+    }
+}
+
+fn unpack_vector(details: Option<&Vec<String>>) -> String {
+    let mut output = String::new();
+    match details {
+        Some(v) => {
+            for element in v {
+                output.push_str("\"");
+                output.push_str(element.as_ref());
+                output.push_str("\"");
+                output.push_str(" ");
+            }
+        }
+        None => output = String::from("No information"),
+    }
+    output
 }
 
 //Function used to draw list of animes contained in App struct
