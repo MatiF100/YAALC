@@ -62,7 +62,7 @@ impl App {
 
     //Loading into app animes that meet name criteria
     async fn search_animes(&mut self, search: String) {
-        self.animes = StatefulList::with_items(anilist::search_anime_by_name(search).await);
+        self.animes = StatefulList::with_items(anilist::search_anime_by_name(search, &self).await);
     }
 
     //Listener for keyboard input handling. Actions are dependant on AppMode
@@ -92,6 +92,10 @@ impl App {
                             code: KeyCode::Down,
                             modifiers: _,
                         } => self.animes.next(),
+                        KeyEvent {
+                            code: KeyCode::Esc,
+                            modifiers: _,
+                        } => self.animes.unselect(),
                         _ => (),
                     },
                     //Event::Resize(_, _) => terminal::draw_frame(&mut terminal, &mut app),

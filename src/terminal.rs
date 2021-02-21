@@ -70,17 +70,24 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
                 .as_ref(),
             )
             .split(f.size());
-        let block = Block::default().title("Search").borders(Borders::ALL);
+        let main_areas = Layout::default()
+        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+        .direction(Direction::Horizontal)
+        .split(chunks[1]);
+
+
+        let search_block = Block::default().title("Search").borders(Borders::ALL);
+        let legend_block = Block::default().title("Keybindings").borders(Borders::NONE);
         let text = match app.mode {
             AppMode::INPUT => format!("{}_", app.search_bar),
             AppMode::NORMAL => app.search_bar.clone(),
         };
         let paragraph = Paragraph::new(text)
-            .block(block.clone())
+            .block(search_block)
             .wrap(Wrap { trim: false });
         f.render_widget(paragraph, chunks[0]);
-        draw_list(f, chunks[1], app);
-        f.render_widget(block.clone(), chunks[2]);
+        draw_list(f, main_areas[0], app);
+        f.render_widget(legend_block, chunks[2]);
     }) {
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
@@ -93,11 +100,6 @@ fn draw_list(
     area: Rect,
     app: &mut App,
 ) {
-    let chunks = Layout::default()
-        .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
-        .direction(Direction::Horizontal)
-        .split(area);
-
     let tasks: Vec<ListItem> = app
         .animes
         .items
@@ -110,6 +112,6 @@ fn draw_list(
         .highlight_symbol(" >");
 
     //f.render_widget(tasks.clone(), chunks[0]);
-    f.render_stateful_widget(tasks, chunks[0], &mut app.animes.state);
+    f.render_stateful_widget(tasks, area, &mut app.animes.state);
     //println!("{:?}", app.animes.state);
 }

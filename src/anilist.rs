@@ -37,11 +37,15 @@ pub async fn test(app: &App) -> serde_json::Value {
     let json = json!({"query": queries::TEST_QUERY, "variables": &data});
     println!("{:?}", json!(&data));
 
-    let resp = client
+    let mut resp = client
         .post("https://graphql.anilist.co/")
         .header("Content-Type", "application/json")
-        .header("Accept", "application/json")
-        .header("Authorization", app.get_token().unwrap())
+        .header("Accept", "application/json");
+    match app.get_token() {
+        Some(token) => resp = resp.header("Authorization", token),
+        None => (),
+    }
+    let resp = resp
         .body(json.to_string())
         .send()
         .await
@@ -56,7 +60,7 @@ pub async fn test(app: &App) -> serde_json::Value {
 }
 
 //Function sending request for animes filtered only by name
-pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
+pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Anime> {
     let client = Client::new();
     let mut query_args = filters::Variables::new();
     let mut page_index = 1;
@@ -67,10 +71,15 @@ pub async fn search_anime_by_name(search: String) -> Vec<Anime> {
     loop {
         query_args.page_setup(page_index, 50);
         let query = json!({"query": queries::TEST_QUERY, "variables": &query_args});
-        let response = client
+        let mut response = client
             .post("https://graphql.anilist.co/")
             .header("Content-Type", "application/json")
-            .header("Accept", "application/json")
+            .header("Accept", "application/json");
+        match app.get_token() {
+            Some(token) => response = response.header("Authorization", token),
+            None => (),
+        }
+        let response = response
             .body(query.to_string())
             .send()
             .await
