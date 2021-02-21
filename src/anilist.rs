@@ -1,7 +1,4 @@
-use crate::{
-    app::{Anime, App, PagedAnime, RecievedData, RecievedPage, StatefulList},
-    terminal,
-};
+use crate::app::{Anime, App, PagedAnime, RecievedData, RecievedPage};
 use reqwest::Client;
 use serde_json::json;
 

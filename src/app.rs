@@ -2,7 +2,6 @@ use crate::anilist;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyModifiers};
 use oauth2::AccessToken;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use std::fs::File;
 use std::time::SystemTime;
 use tui::widgets::ListState;
@@ -30,17 +29,20 @@ impl App {
         }
     }
 
-    //Getting authorization token from the anilist.co
+    //Getting authorization token from the anilist.co, or reading it from file
     pub fn authorize(&mut self) {
         match std::fs::read_to_string("token.json") {
             Ok(token) => {
                 let token: AuthToken = serde_json::from_str(&token).unwrap();
-                self.token = Some(token);
+                if AuthToken::validate_token(&token) {
+                    self.token = Some(token);
+                } else {
+                    self.token = AuthToken::request_and_save_token();
+                }
             }
             Err(e) => match e.kind() {
                 std::io::ErrorKind::NotFound => {
-                    let token = anilist::auth::auth();
-                    serde_json::to_writer_pretty(&File::create("token.json").unwrap(), &token);
+                    self.token = AuthToken::request_and_save_token();
                 }
                 _ => println!(
                     "Failed to read authentication token! App will run in search_only mode"
@@ -157,6 +159,28 @@ impl AuthToken {
     pub fn get_token(&self) -> String {
         let mut token = String::from("Bearer ");
         token.push_str(self.access_token.secret());
+        token
+    }
+    //Function checking if given token is still valid
+    fn validate_token(token: &AuthToken) -> bool {
+        if token.expires_at
+            <= SystemTime::now()
+                .duration_since(SystemTime::UNIX_EPOCH)
+                .unwrap()
+                .as_secs()
+                - 7200
+        {
+            return false;
+        }
+        true
+    }
+
+    fn request_and_save_token() -> Option<AuthToken> {
+        let token = anilist::auth::auth();
+        match serde_json::to_writer_pretty(&File::create("token.json").unwrap(), &token) {
+            Err(e) => println!("Unexpected error! Failed to save auth token! {}", e),
+            _ => (),
+        };
         token
     }
 }
