@@ -10,6 +10,11 @@ async fn main() {
 
     let mut app = app::App::new("Lista anime".to_owned());
     app.authorize();
+    app.set_legend(vec![
+        ("I".to_owned(), "Enter  search".to_owned()),
+        ("Q".to_owned(), "Exit app".to_owned()),
+        ("Esc".to_owned(), "Exit search".to_owned()),
+    ]);
 
     let test: app::RecievedData = serde_json::from_value(anilist::test(&app).await).unwrap();
 

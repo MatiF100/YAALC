@@ -78,7 +78,6 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
             .split(chunks[1]);
 
         let search_block = Block::default().title("Search").borders(Borders::ALL);
-        let legend_block = Block::default().title("Keybindings").borders(Borders::NONE);
         let search_text = match app.mode {
             AppMode::INPUT => format!("{}_", app.search_bar),
             AppMode::NORMAL => app.search_bar.clone(),
@@ -89,7 +88,7 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
         f.render_widget(anime_list, chunks[0]);
         draw_list(f, main_areas[0], app);
         draw_details(f, main_areas[1], app);
-        f.render_widget(legend_block, chunks[2]);
+        draw_legend(f, chunks[2], app);
     }) {
         Ok(_) => (),
         Err(e) => panic!("Unexpected error happened: {}", e),
@@ -235,4 +234,37 @@ fn draw_list(
     //f.render_widget(tasks.clone(), chunks[0]);
     f.render_stateful_widget(tasks, area, &mut app.animes.state);
     //println!("{:?}", app.animes.state);
+}
+
+fn draw_legend(
+    f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>,
+    area: Rect,
+    app: &mut App,
+) {
+    let binds = app
+        .legend
+        .iter()
+        .map(|tuple| {
+            vec![
+                Span::styled(
+                    tuple.0.clone(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    ": ".to_owned(),
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    tuple.1.clone(),
+                    Style::default().add_modifier(Modifier::UNDERLINED),
+                ),
+                Span::raw(" | "),
+            ]
+        })
+        .collect::<Vec<Vec<Span>>>()
+        .concat();
+    let paragraph = Paragraph::new(Spans::from(binds))
+        .block(Block::default().title("Keybindings").borders(Borders::ALL));
+
+    f.render_widget(paragraph, area);
 }

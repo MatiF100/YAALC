@@ -29,6 +29,10 @@ impl App {
         }
     }
 
+    pub fn set_legend(&mut self, legend: Vec<(String, String)>) {
+        self.legend = legend;
+    }
+
     //Getting authorization token from the anilist.co, or reading it from file
     pub fn authorize(&mut self) {
         match std::fs::read_to_string("token.json") {
