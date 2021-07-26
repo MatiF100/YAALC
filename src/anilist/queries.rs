@@ -39,7 +39,20 @@ query {
             anime{
                 count,
                 meanScore,
-                episodesWatched
+                standardDeviation,
+                minutesWatched,
+                episodesWatched,
+                chaptersRead,
+                volumesRead
+            }
+            manga{
+                count,
+                meanScore,
+                standardDeviation,
+                minutesWatched,
+                episodesWatched,
+                chaptersRead,
+                volumesRead
             }
         }
     }

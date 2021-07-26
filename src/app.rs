@@ -7,7 +7,7 @@ use std::time::SystemTime;
 use tui::widgets::ListState;
 
 //Struct holding information about current app state, including current mode and data to be shown
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct App {
     pub title: String,
     pub user: Option<User>,
@@ -35,7 +35,7 @@ impl App {
     }
 
     //Getting authorization token from the anilist.co, or reading it from file
-    pub fn authorize(&mut self) {
+    pub async fn authorize(&mut self) {
         match std::fs::read_to_string("token.json") {
             Ok(token) => {
                 let token: AuthToken = serde_json::from_str(&token).unwrap();
@@ -54,6 +54,9 @@ impl App {
                 ),
             },
         }
+        if let &Some(_) = &self.token{
+            self.user = self.get_current_user_data().await;
+        }
         //self.token = anilist::auth::auth();
     }
 
@@ -65,9 +68,24 @@ impl App {
         }
     }
 
+
     //Loading into app animes that meet name criteria
     async fn search_animes(&mut self, search: String) {
         self.animes = StatefulList::with_items(anilist::search_anime_by_name(search, &self).await);
+    }
+
+    async fn get_current_user_data(&self) -> Option<User>{
+        //println!("{:?}",serde_json::from_value::<User>(anilist::send_request(&self, anilist::queries::CURRENT_USER_DATA, anilist::filters::Variables::new()).await));
+        if let Ok(response) = serde_json::from_value::<RecievedData<RecievedUser>>(anilist::send_request(&self, anilist::queries::CURRENT_USER_DATA, anilist::filters::Variables::new()).await){
+            if let Some(data) = response.data{
+                data.user
+            }else{
+                None
+            }
+        }
+        else{
+            None
+        }
     }
 
     //Listener for keyboard input handling. Actions are dependant on AppMode
@@ -146,23 +164,32 @@ impl App {
 }
 
 //Struct holding information about currently authenticated user
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename = "Viewer")]
 pub struct User{
-    id: i32,
+    id:i32,
     name: String,
-    about: String,
+    about: Option<String>,
     statistics: UserStatisticTypes
 }
 
+//Struct holding User field contained in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "PascalCase")]
+pub struct RecievedUser {
+    #[serde(alias = "Viewer")]
+    pub user: Option<User>,
+}
+
 //Struct holding information about user's statistics in media
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UserStatisticTypes{
     anime: UserStatistics,
     manga: UserStatistics
 }
 
 //Struct holding information about given medium statistic
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UserStatistics{
     count: i32,
@@ -175,7 +202,7 @@ pub struct UserStatistics{
 }
 
 //Struct holding information about authorization token
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AuthToken {
     access_token: AccessToken,
     expires_at: u64,
@@ -224,6 +251,7 @@ impl AuthToken {
 }
 
 //Enum containing possible application states.
+#[derive(Debug)]
 pub enum AppMode {
     NORMAL,
     INPUT,
@@ -238,8 +266,8 @@ impl Default for AppMode {
 
 //Struct holding data and/or errors recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
-pub struct RecievedData {
-    pub data: Option<RecievedPage>,
+pub struct RecievedData<T> {
+    pub data: Option<T>,
     pub errors: Option<serde_json::Value>,
 }
 
@@ -249,6 +277,8 @@ pub struct RecievedData {
 pub struct RecievedPage {
     pub page: Option<PagedAnime>,
 }
+
+
 
 //Struct holding contents of Page field in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
@@ -308,6 +338,7 @@ impl Title {
     }
 }
 
+#[derive(Debug)]
 //Struct holding some data as vector, as well as information about currently selected element
 pub struct StatefulList<T> {
     pub state: ListState,

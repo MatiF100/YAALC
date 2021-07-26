@@ -24,7 +24,9 @@ pub async fn send_request(app: &App, query: &str, variables: filters::Variables)
     resp = resp.body(data.to_string());
 
     serde_json::from_str(&resp.send().await.unwrap().text().await.unwrap()).unwrap()
+    //resp.send().await.unwrap().text().await.unwrap()
 }
+
 
 //Test function that sends first request
 //Used mainly for testing purposes
@@ -108,7 +110,7 @@ pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Anime> {
             .await
             .unwrap();
 
-        let animes: RecievedData = serde_json::from_str(&response).unwrap();
+        let animes: RecievedData<RecievedPage> = serde_json::from_str(&response).unwrap();
 
         //let tmp = animes.data.unwrap().page.unwrap().media.unwrap();
 
@@ -127,7 +129,7 @@ pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Anime> {
 }
 
 //Function unpacking data recieved from API endpoint, and checking for errors
-fn get_page_from_recieved_data(data: RecievedData) -> PagedAnime {
+fn get_page_from_recieved_data(data: RecievedData<RecievedPage>) -> PagedAnime {
     match data {
         RecievedData {
             data: Some(data),
