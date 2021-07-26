@@ -172,10 +172,10 @@ impl App {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename = "Viewer")]
 pub struct User {
-    id: i32,
-    name: String,
-    about: Option<String>,
-    statistics: UserStatisticTypes,
+    pub id: i32,
+    pub name: String,
+    pub about: Option<String>,
+    pub statistics: UserStatisticTypes,
 }
 
 //Struct holding User field contained in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
@@ -189,21 +189,21 @@ pub struct RecievedUser {
 //Struct holding information about user's statistics in media
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserStatisticTypes {
-    anime: UserStatistics,
-    manga: UserStatistics,
+    pub anime: UserStatistics,
+    pub manga: UserStatistics,
 }
 
 //Struct holding information about given medium statistic
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct UserStatistics {
-    count: i32,
-    mean_score: f32,
-    standard_deviation: f32,
-    minutes_watched: i32,
-    episodes_watched: i32,
-    chapters_read: i32,
-    volumes_read: i32,
+    pub count: i32,
+    pub mean_score: f32,
+    pub standard_deviation: f32,
+    pub minutes_watched: i32,
+    pub episodes_watched: i32,
+    pub chapters_read: i32,
+    pub volumes_read: i32,
 }
 
 //Struct holding information about authorization token

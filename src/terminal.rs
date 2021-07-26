@@ -16,7 +16,7 @@ use tui::Terminal;
 
 //use serde_json::json;
 
-use crate::app::{App, AppMode, StatefulList};
+use crate::app::{App, AppMode, StatefulList, User};
 
 //Entering alternate screen, and creating new terminal instance
 //Returning handle to this terminal
@@ -180,14 +180,8 @@ fn draw_details(
                 .wrap(Wrap { trim: true });
             f.render_widget(info, area)
         }
-        None => {
-            let info = Paragraph::new(
-                "Please select an anime from the list, or search for something more interesting",
-            )
-            .block(Block::default().title("Details").borders(Borders::ALL))
-            .wrap(Wrap { trim: true });
-            f.render_widget(info, area);
-        }
+
+        None => draw_user_data(f, area, &app.user),
     }
 }
 
@@ -267,4 +261,56 @@ fn draw_legend(
         .block(Block::default().title("Keybindings").borders(Borders::ALL));
 
     f.render_widget(paragraph, area);
+}
+
+fn draw_user_data(
+    f: &mut Frame<tui::backend::CrosstermBackend<std::io::Stdout>>,
+    area: Rect,
+    user_info: &Option<User>,
+) {
+    if let Some(user) = user_info {
+        let mut user_data: Vec<Spans> = vec![
+            Spans::from(vec![
+                Span::styled("Username: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(&user.name, Style::default()),
+            ]),
+            Spans::from(vec![
+                Span::styled(
+                    "Number of listed Anime: ",
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(user.statistics.anime.count.to_string(), Style::default()),
+            ]),
+            Spans::from(vec![
+                Span::styled(
+                    "Episodes watched: ",
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    user.statistics.anime.episodes_watched.to_string(),
+                    Style::default(),
+                ),
+            ]),
+            Spans::from(vec![
+                Span::styled(
+                    "Minutes watched: ",
+                    Style::default().add_modifier(Modifier::BOLD),
+                ),
+                Span::styled(
+                    user.statistics.anime.minutes_watched.to_string(),
+                    Style::default(),
+                ),
+            ]),
+        ];
+        let paragraph = Paragraph::new(user_data)
+            .block(Block::default().title("About user").borders(Borders::ALL));
+        f.render_widget(paragraph, area);
+    } else {
+        let info = Paragraph::new(
+            "Please select an anime from the list, or search for something more interesting",
+        )
+        .block(Block::default().title("Details").borders(Borders::ALL))
+        .wrap(Wrap { trim: true });
+        f.render_widget(info, area);
+    }
 }
