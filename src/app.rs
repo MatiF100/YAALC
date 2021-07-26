@@ -10,6 +10,7 @@ use tui::widgets::ListState;
 #[derive(Default)]
 pub struct App {
     pub title: String,
+    pub user: Option<User>,
     pub animes: StatefulList<Anime>,
     pub token: Option<AuthToken>,
     pub should_exit: bool,
@@ -142,6 +143,35 @@ impl App {
             },
         }
     }
+}
+
+//Struct holding information about currently authenticated user
+#[derive(Serialize, Deserialize)]
+pub struct User{
+    id: i32,
+    name: String,
+    about: String,
+    statistics: UserStatisticTypes
+}
+
+//Struct holding information about user's statistics in media
+#[derive(Serialize, Deserialize)]
+pub struct UserStatisticTypes{
+    anime: UserStatistics,
+    manga: UserStatistics
+}
+
+//Struct holding information about given medium statistic
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserStatistics{
+    count: i32,
+    mean_score: f32,
+    standard_deviation: f32,
+    minutes_watched: i32,
+    episodes_watched: i32,
+    chapters_read: i32,
+    volumes_read: i32
 }
 
 //Struct holding information about authorization token

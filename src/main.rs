@@ -2,9 +2,9 @@ mod anilist;
 mod app;
 mod terminal;
 
+
 #[tokio::main]
 async fn main() {
-    //println!("{:#?}", anilist::test().await.get("data").unwrap().get("Page").unwrap());
 
     //dbg!(&test);
 
@@ -31,4 +31,5 @@ async fn main() {
         terminal::draw_frame(&mut terminal, &mut app);
     }
     terminal::leave_terminal();
+    println!("{:#?}", anilist::send_request(&app, crate::anilist::queries::CURRENT_USER_DATA, crate::anilist::filters::Variables::new()).await);
 }

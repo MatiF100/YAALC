@@ -3,8 +3,28 @@ use reqwest::Client;
 use serde_json::json;
 
 pub mod auth;
-mod filters;
-mod queries;
+pub mod filters;
+pub mod queries;
+
+pub async fn send_request(app: &App, query: &str, variables: filters::Variables) -> serde_json::Value{
+    let client = Client::new();
+
+    let data = json!({
+        "query": query,
+        "variables": variables
+    }
+    );
+    let mut resp = client
+        .post("https://graphql.anilist.co/")
+        .header("Content-Type", "application/json")
+        .header("Accept", "application/json");
+    if let Some(access_token) = app.get_token(){
+        resp = resp.header("Authorization", access_token);
+    }
+    resp = resp.body(data.to_string());
+
+    serde_json::from_str(&resp.send().await.unwrap().text().await.unwrap()).unwrap()
+}
 
 //Test function that sends first request
 //Used mainly for testing purposes

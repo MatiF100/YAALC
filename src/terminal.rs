@@ -14,7 +14,7 @@ use tui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Widget,
 use tui::Frame;
 use tui::Terminal;
 
-use serde_json::json;
+//use serde_json::json;
 
 use crate::app::{App, AppMode, StatefulList};
 

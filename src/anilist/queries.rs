@@ -1,3 +1,4 @@
+//Read queries
 pub const TEST_QUERY: &str = "
 query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeason, $seasonYear: Int, $type: MediaType) {
   Page (page: $page, perPage: $perPage) {
@@ -27,3 +28,22 @@ query ($id: Int, $page: Int, $perPage: Int, $search: String, $season: MediaSeaso
   }
 }
 ";
+
+pub const CURRENT_USER_DATA: &str = "
+query {
+    Viewer{
+        id,
+        name,
+        about,
+        statistics{
+            anime{
+                count,
+                meanScore,
+                episodesWatched
+            }
+        }
+    }
+}
+";
+
+//Mutations (Edition queries)
