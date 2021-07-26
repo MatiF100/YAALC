@@ -6,7 +6,11 @@ pub mod auth;
 pub mod filters;
 pub mod queries;
 
-pub async fn send_request(app: &App, query: &str, variables: filters::Variables) -> serde_json::Value{
+pub async fn send_request(
+    app: &App,
+    query: &str,
+    variables: filters::Variables,
+) -> serde_json::Value {
     let client = Client::new();
 
     let data = json!({
@@ -18,7 +22,7 @@ pub async fn send_request(app: &App, query: &str, variables: filters::Variables)
         .post("https://graphql.anilist.co/")
         .header("Content-Type", "application/json")
         .header("Accept", "application/json");
-    if let Some(access_token) = app.get_token(){
+    if let Some(access_token) = app.get_token() {
         resp = resp.header("Authorization", access_token);
     }
     resp = resp.body(data.to_string());
@@ -26,7 +30,6 @@ pub async fn send_request(app: &App, query: &str, variables: filters::Variables)
     serde_json::from_str(&resp.send().await.unwrap().text().await.unwrap()).unwrap()
     //resp.send().await.unwrap().text().await.unwrap()
 }
-
 
 //Test function that sends first request
 //Used mainly for testing purposes

@@ -54,7 +54,7 @@ impl App {
                 ),
             },
         }
-        if let &Some(_) = &self.token{
+        if let &Some(_) = &self.token {
             self.user = self.get_current_user_data().await;
         }
         //self.token = anilist::auth::auth();
@@ -68,22 +68,27 @@ impl App {
         }
     }
 
-
     //Loading into app animes that meet name criteria
     async fn search_animes(&mut self, search: String) {
         self.animes = StatefulList::with_items(anilist::search_anime_by_name(search, &self).await);
     }
 
-    async fn get_current_user_data(&self) -> Option<User>{
+    async fn get_current_user_data(&self) -> Option<User> {
         //println!("{:?}",serde_json::from_value::<User>(anilist::send_request(&self, anilist::queries::CURRENT_USER_DATA, anilist::filters::Variables::new()).await));
-        if let Ok(response) = serde_json::from_value::<RecievedData<RecievedUser>>(anilist::send_request(&self, anilist::queries::CURRENT_USER_DATA, anilist::filters::Variables::new()).await){
-            if let Some(data) = response.data{
+        if let Ok(response) = serde_json::from_value::<RecievedData<RecievedUser>>(
+            anilist::send_request(
+                &self,
+                anilist::queries::CURRENT_USER_DATA,
+                anilist::filters::Variables::new(),
+            )
+            .await,
+        ) {
+            if let Some(data) = response.data {
                 data.user
-            }else{
+            } else {
                 None
             }
-        }
-        else{
+        } else {
             None
         }
     }
@@ -166,11 +171,11 @@ impl App {
 //Struct holding information about currently authenticated user
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename = "Viewer")]
-pub struct User{
-    id:i32,
+pub struct User {
+    id: i32,
     name: String,
     about: Option<String>,
-    statistics: UserStatisticTypes
+    statistics: UserStatisticTypes,
 }
 
 //Struct holding User field contained in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
@@ -183,22 +188,22 @@ pub struct RecievedUser {
 
 //Struct holding information about user's statistics in media
 #[derive(Serialize, Deserialize, Debug)]
-pub struct UserStatisticTypes{
+pub struct UserStatisticTypes {
     anime: UserStatistics,
-    manga: UserStatistics
+    manga: UserStatistics,
 }
 
 //Struct holding information about given medium statistic
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct UserStatistics{
+pub struct UserStatistics {
     count: i32,
     mean_score: f32,
     standard_deviation: f32,
     minutes_watched: i32,
     episodes_watched: i32,
     chapters_read: i32,
-    volumes_read: i32
+    volumes_read: i32,
 }
 
 //Struct holding information about authorization token
@@ -277,8 +282,6 @@ pub struct RecievedData<T> {
 pub struct RecievedPage {
     pub page: Option<PagedAnime>,
 }
-
-
 
 //Struct holding contents of Page field in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]

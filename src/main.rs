@@ -2,10 +2,8 @@ mod anilist;
 mod app;
 mod terminal;
 
-
 #[tokio::main]
 async fn main() {
-
     //dbg!(&test);
 
     let mut app = app::App::new("Lista anime".to_owned());
@@ -16,7 +14,8 @@ async fn main() {
         ("Esc".to_owned(), "Exit search".to_owned()),
     ]);
 
-    let test: app::RecievedData<app::RecievedPage> = serde_json::from_value(anilist::test(&app).await).unwrap();
+    let test: app::RecievedData<app::RecievedPage> =
+        serde_json::from_value(anilist::test(&app).await).unwrap();
 
     let dummy_list = app::StatefulList::with_items(test.data.unwrap().page.unwrap().media);
     app.animes = dummy_list;
