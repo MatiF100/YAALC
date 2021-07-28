@@ -30,7 +30,13 @@ async fn main() {
         terminal::draw_frame(&mut terminal, &mut app);
     }
     terminal::leave_terminal();
-    //println!("{:#?}", serde_json::from_value::<app::RecievedData<app::RecievedUser>>(anilist::send_request(&app, crate::anilist::queries::CURRENT_USER_DATA, crate::anilist::filters::Variables::new()).await));
-    //println!("{:#?}", anilist::send_request(&app, crate::anilist::queries::CURRENT_USER_DATA, crate::anilist::filters::Variables::new()).await);
-    println!("{:?}", app);
+    if let Some(user) = &app.user{ 
+    let tmp = anilist::send_request(&app, anilist::queries::GET_ANIME_LIST, anilist::filters::Variables{
+        user_id: Some(user.id),
+        media_type: Some(anilist::filters::MediaType::ANIME),
+        ..Default::default()
+    }).await;
+
+    println!("{:?}", tmp);
+}
 }

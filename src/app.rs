@@ -11,7 +11,7 @@ use tui::widgets::ListState;
 pub struct App {
     pub title: String,
     pub user: Option<User>,
-    pub animes: StatefulList<Anime>,
+    pub animes: StatefulList<Media>,
     pub token: Option<AuthToken>,
     pub should_exit: bool,
     pub legend: Vec<(String, String)>,
@@ -168,6 +168,36 @@ impl App {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
+pub struct MediaListCollection{
+    lists: MediaListGroup,
+    has_next_chunk: bool
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
+pub struct MediaListGroup{
+    entries: Vec<MediaList>,
+    name: String,
+    is_custom_list: bool,
+    is_split_completed_list: bool,
+    status: String
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all="camelCase")]
+pub struct MediaList{
+    id: i32,
+    user_id: i32,
+    media_id: i32,
+    status: String,
+    score: f32,
+    progress: i32,
+    media: Media,
+    user: Option<User>
+}
+
 //Struct holding information about currently authenticated user
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename = "Viewer")]
@@ -280,15 +310,15 @@ pub struct RecievedData<T> {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "PascalCase")]
 pub struct RecievedPage {
-    pub page: Option<PagedAnime>,
+    pub page: Option<PagedMedia>,
 }
 
 //Struct holding contents of Page field in data recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct PagedAnime {
+pub struct PagedMedia {
     pub page_info: PageDetails,
-    pub media: Vec<Anime>,
+    pub media: Vec<Media>,
 }
 
 //Struct holding details of page recieved from anilist.co, such as it's index, total number of pages and more. Written as to allow serialization and deserialization using serde library
@@ -305,7 +335,7 @@ pub struct PageDetails {
 //Struct holding data about anime recieved from anilist.co. Written as to allow serialization and deserialization using serde library
 #[derive(Default, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Anime {
+pub struct Media {
     pub id: Option<i32>,
     pub id_mal: Option<i32>,
     pub title: Title,

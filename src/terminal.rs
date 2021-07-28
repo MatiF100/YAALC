@@ -65,9 +65,9 @@ pub fn draw_frame(terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>, ap
             .margin(1)
             .constraints(
                 [
-                    Constraint::Percentage(8),
-                    Constraint::Percentage(85),
-                    Constraint::Percentage(5),
+                    Constraint::Length(3),
+                    Constraint::Percentage(80),
+                    Constraint::Length(3),
                 ]
                 .as_ref(),
             )
@@ -269,7 +269,7 @@ fn draw_user_data(
     user_info: &Option<User>,
 ) {
     if let Some(user) = user_info {
-        let mut user_data: Vec<Spans> = vec![
+        let user_data: Vec<Spans> = vec![
             Spans::from(vec![
                 Span::styled("Username: ", Style::default().add_modifier(Modifier::BOLD)),
                 Span::styled(&user.name, Style::default()),

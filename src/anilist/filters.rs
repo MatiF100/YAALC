@@ -6,22 +6,30 @@ use serde::{Deserialize, Serialize};
 //If given field is Option::None, it is not included in serialized data
 pub struct Variables {
     #[serde(skip_serializing_if = "Option::is_none")]
-    id: Option<i32>,
+    pub id: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    id_mal: Option<i32>,
+    pub id_mal: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    page: Option<i32>,
+    pub page: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    per_page: Option<i32>,
+    pub per_page: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    season: Option<String>,
+    pub season: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    season_year: Option<i32>,
+    pub season_year: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    search: Option<String>,
+    pub search: Option<String>,
     #[serde(rename = "type")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    media_type: Option<MediaType>,
+    pub media_type: Option<MediaType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_id: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chunk: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub per_chunk: Option<i32>,
 }
 
 impl Variables {

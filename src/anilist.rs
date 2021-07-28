@@ -1,4 +1,4 @@
-use crate::app::{Anime, App, PagedAnime, RecievedData, RecievedPage};
+use crate::app::{Media, App, PagedMedia, RecievedData, RecievedPage};
 use reqwest::Client;
 use serde_json::json;
 
@@ -85,13 +85,13 @@ pub async fn test(app: &App) -> serde_json::Value {
 }
 
 //Function sending request for animes filtered only by name
-pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Anime> {
+pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Media> {
     let client = Client::new();
     let mut query_args = filters::Variables::new();
     let mut page_index = 1;
     query_args.set_anime_type();
     query_args.search_setup(search);
-    let mut output: Vec<Anime> = Vec::new();
+    let mut output: Vec<Media> = Vec::new();
 
     loop {
         query_args.page_setup(page_index, 50);
@@ -132,7 +132,7 @@ pub async fn search_anime_by_name(search: String, app: &App) -> Vec<Anime> {
 }
 
 //Function unpacking data recieved from API endpoint, and checking for errors
-fn get_page_from_recieved_data(data: RecievedData<RecievedPage>) -> PagedAnime {
+fn get_page_from_recieved_data(data: RecievedData<RecievedPage>) -> PagedMedia {
     match data {
         RecievedData {
             data: Some(data),

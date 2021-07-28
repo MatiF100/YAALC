@@ -59,4 +59,41 @@ query {
 }
 ";
 
+pub const GET_ANIME_LIST: &str = "
+query($userId: Int, $type: MediaType){
+    MediaListCollection(userId: $userId, type: $type){
+        lists{
+            entries{
+                id,
+                userId,
+                mediaId,
+                status,
+                score,
+                progress,
+                media{
+                    id,
+                    idMal,
+                    title{
+                        native,
+                        romaji,
+                        english
+                    },
+                    season,
+                    seasonYear,
+                    episodes,
+                    genres,
+                    status,
+                    duration
+                }
+            },
+            name,
+            isCustomList,
+            isSplitCompletedList,
+            status
+        },
+        hasNextChunk
+    }
+}
+";
+
 //Mutations (Edition queries)
